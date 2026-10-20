@@ -1,0 +1,159 @@
+# ---------------------------------------------------------------
+#  Settings for your daily markets newspaper.
+#  You can change anything in this file without touching the code.
+# ---------------------------------------------------------------
+
+paper:
+  name: The Morning Ledger
+  tagline: Markets, money and what moved them - every weekday before the opening bell
+  # Your time zone (list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+  timezone: America/New_York
+  publish_hour: 7          # 24-hour clock, in the time zone above
+  publish_weekdays_only: true
+  # Once GitHub Pages is switched on, paste your site address here,
+  # e.g. https://your-username.github.io/market-daily
+  # (it makes the preview image show up when you share the link on LinkedIn)
+  site_url: ""
+
+writer:
+  # Which Claude model writes the article. "claude-sonnet-5-5" is roughly half the price.
+  model: claude-opus-5-5
+  # How many web searches Claude may run to find out WHY markets moved.
+  max_searches: 6
+
+# The numbers strip across the top of the front page.
+ticker_strip: [^GSPC, ^IXIC, ^FTSE, ^GDAXI, ^N225, ^TNX, GBPUSD=X, CL=F, GC=F, BTC-USD]
+
+# Everything the paper tracks. Symbols are Yahoo Finance symbols -
+# search a company on finance.yahoo.com to find its symbol.
+# kind: yield  -> moves are shown in basis points instead of percent.
+groups:
+  - id: us
+    title: US markets
+    tickers:
+      ^GSPC: S&P 500
+      ^DJI: Dow Jones
+      ^IXIC: Nasdaq Composite
+      ^RUT: Russell 2000 (small caps)
+      ^VIX: VIX (volatility / "fear gauge")
+
+  - id: europe
+    title: Europe
+    tickers:
+      ^FTSE: FTSE 100
+      ^FTMC: FTSE 250
+      ^GDAXI: DAX (Germany)
+      ^FCHI: CAC 40 (France)
+      ^STOXX50E: Euro Stoxx 50
+
+  - id: asia
+    title: Asia-Pacific
+    tickers:
+      ^N225: Nikkei 225 (Japan)
+      ^HSI: Hang Seng (Hong Kong)
+      000001.SS: Shanghai Composite
+      ^NSEI: Nifty 50 (India)
+      ^KS11: KOSPI (South Korea)
+      ^AXJO: ASX 200 (Australia)
+
+  - id: rates
+    title: Government bond yields
+    kind: yield
+    tickers:
+      ^IRX: US 3-month T-bill
+      ^FVX: US 5-year Treasury
+      ^TNX: US 10-year Treasury
+      ^TYX: US 30-year Treasury
+
+  - id: fx
+    title: Currencies
+    tickers:
+      DX-Y.NYB: US Dollar Index
+      EURUSD=X: EUR / USD
+      GBPUSD=X: GBP / USD
+      USDJPY=X: USD / JPY
+      USDCNY=X: USD / CNY
+
+  - id: commodities
+    title: Commodities
+    tickers:
+      CL=F: WTI crude oil
+      BZ=F: Brent crude oil
+      NG=F: Natural gas
+      GC=F: Gold
+      SI=F: Silver
+      HG=F: Copper
+
+  - id: crypto
+    title: Crypto
+    tickers:
+      BTC-USD: Bitcoin
+      ETH-USD: Ethereum
+      SOL-USD: Solana
+      XRP-USD: XRP
+
+  - id: sectors
+    title: US sectors
+    tickers:
+      XLK: Technology
+      XLF: Financials
+      XLE: Energy
+      XLV: Health care
+      XLY: Consumer discretionary
+      XLP: Consumer staples
+      XLI: Industrials
+      XLU: Utilities
+      XLB: Materials
+      XLRE: Real estate
+      XLC: Communication services
+
+  - id: big_tech
+    title: Big Tech
+    tickers:
+      AAPL: Apple
+      MSFT: Microsoft
+      NVDA: Nvidia
+      GOOGL: Alphabet
+      AMZN: Amazon
+      META: Meta
+      TSLA: Tesla
+      AVGO: Broadcom
+
+  - id: banks
+    title: Banks
+    tickers:
+      JPM: JPMorgan Chase
+      BAC: Bank of America
+      GS: Goldman Sachs
+      MS: Morgan Stanley
+      C: Citigroup
+      WFC: Wells Fargo
+      HSBA.L: HSBC (London, pence)
+      BARC.L: Barclays (London, pence)
+
+  - id: heavyweights
+    title: Other heavyweights
+    tickers:
+      BRK-B: Berkshire Hathaway
+      LLY: Eli Lilly
+      NVO: Novo Nordisk
+      JNJ: Johnson & Johnson
+      XOM: ExxonMobil
+      WMT: Walmart
+      V: Visa
+
+  - id: rising
+    title: On the come-up
+    tickers:
+      SMH: Semiconductors ETF
+      AMD: AMD
+      TSM: TSMC
+      ARM: Arm Holdings
+      PLTR: Palantir
+      CIBR: Cybersecurity ETF
+      BOTZ: Robotics & AI ETF
+      URA: Uranium ETF
+      ICLN: Clean energy ETF
+      ARKK: ARK Innovation ETF
+      EEM: Emerging markets ETF
+      INDA: India ETF

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ headline }} | {{ paper.name }}</title>
+  <meta name="description" content="{{ standfirst }}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{{ paper.name }}">
+  <meta property="og:title" content="{{ headline }}">
+  <meta property="og:description" content="{{ standfirst }}">
+  {% if page_url %}<meta property="og:url" content="{{ page_url }}">{% endif %}
+  {% if og_image %}<meta property="og:image" content="{{ og_image }}">
+  <meta name="twitter:card" content="summary_large_image">{% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  {% include "style.html" %}
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <span>{{ date_long }}</span>
+      <span>No. {{ number }}</span>
+      <a href="{{ root }}archive.html">Past editions</a>
+    </div>
+
+    <header class="masthead">
+      <a class="title" href="{{ root }}index.html">{{ paper.name }}</a>
+      <p class="tagline">{{ paper.tagline }}</p>
+    </header>
+
+    <div class="strip" role="list" aria-label="Key market numbers">
+      {% for item in strip %}
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">{{ item.name }}</span>
+        <span class="strip-level">{{ item.level }}</span>
+        <span class="chg {{ item.dir }}">{{ item.change }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="layout">
+      <main class="article">
+        <h1 class="headline">{{ headline }}</h1>
+        <p class="standfirst">{{ standfirst }}</p>
+
+        {% for section in sections %}
+        <section>
+          <h2>{{ section.title }}</h2>
+          {{ section.html | safe }}
+          {% for chart in section.charts %}
+          <figure>
+            <img src="{{ assets }}{{ chart.file }}" alt="{{ chart.caption }}" width="1200" height="630" loading="lazy">
+            <figcaption>{{ chart.caption }}</figcaption>
+          </figure>
+          {% endfor %}
+        </section>
+        {% endfor %}
+
+        {% if sources %}
+        <section class="sources">
+          <h2>Sources</h2>
+          <ol>
+            {% for s in sources %}<li><a href="{{ s.url }}" rel="noopener">{{ s.title }}</a></li>{% endfor %}
+          </ol>
+        </section>
+        {% endif %}
+      </main>
+
+      <aside class="glance" aria-label="Markets at a glance">
+        <h2 class="glance-title">Markets at a glance</h2>
+        {% for table in tables %}
+        <table>
+          <caption>{{ table.title }}</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            {% for row in table.rows %}
+            <tr>
+              <th scope="row">{{ row.name }}</th>
+              <td>{{ row.level }}</td>
+              <td class="chg {{ row.day_dir }}">{{ row.day }}</td>
+              <td class="chg {{ row.ytd_dir }}">{{ row.ytd }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endfor %}
+      </aside>
+    </div>
+
+    <footer class="footer">
+      <p>Prices from Yahoo Finance and may be delayed. Written with the help of Claude, an AI model, so it can contain mistakes.
+        <strong>For information and education only - not financial advice.</strong></p>
+    </footer>
+  </div>
+</body>
+</html>
