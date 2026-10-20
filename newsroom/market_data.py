@@ -45,6 +45,13 @@ class MarketData:
             "missing": self.missing,
         }
 
+    @classmethod
+    def from_json(cls, config: dict, saved: dict) -> MarketData:
+        """Reloads the numbers saved by to_json (without the price history)."""
+        data = cls(groups=config["groups"], missing=saved["missing"])
+        data.quotes = {q["symbol"]: Quote(**q) for q in saved["quotes"]}
+        return data
+
 
 def _change(new: float, old: float, kind: str) -> float:
     if kind == "yield":

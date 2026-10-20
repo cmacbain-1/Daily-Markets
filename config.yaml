@@ -16,8 +16,6 @@ paper:
   site_url: ""
 
 writer:
-  # Which Claude model writes the article. "claude-sonnet-5-5" is roughly half the price.
-  model: claude-opus-5-5
   # How many web searches Claude may run to find out WHY markets moved.
   max_searches: 6
 

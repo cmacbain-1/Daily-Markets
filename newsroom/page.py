@@ -99,16 +99,14 @@ def _strip(data: MarketData, symbols: list[str]) -> list[dict]:
 
 
 def build(docs: Path, edition_dir: Path, data: MarketData, charts: dict[str, str],
-          article: dict | None, config: dict, now: datetime, number: int) -> None:
+          article: str | None, config: dict, now: datetime, number: int) -> None:
     paper = config["paper"]
     if article:
-        headline, standfirst, sections = _split_article(article["markdown"])
-        sources = article["sources"]
+        headline, standfirst, sections = _split_article(article)
     else:
         headline = "Markets at a glance"
-        standfirst = "Today's numbers and charts. The written article appears here once a Claude API key is added."
+        standfirst = "Today's numbers and charts. The full written edition is back tomorrow."
         sections = [{"title": t, "html": ""} for t in NUMBERS_ONLY_SECTIONS]
-        sources = []
 
     date_slug = edition_dir.name
     site_url = paper.get("site_url", "").rstrip("/")
@@ -117,7 +115,6 @@ def build(docs: Path, edition_dir: Path, data: MarketData, charts: dict[str, str
         "headline": headline,
         "standfirst": standfirst,
         "sections": _place_charts(sections, charts),
-        "sources": sources,
         "tables": _tables(data),
         "strip": _strip(data, config.get("ticker_strip", [])),
         "date_long": now.strftime("%A %d %B %Y").replace(" 0", " "),

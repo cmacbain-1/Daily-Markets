@@ -1,12 +1,14 @@
-"""Asks Claude to write the day's article from the numbers, using web search for the 'why'."""
+"""Writes the brief Claude follows when it writes the day's article.
+
+On GitHub, Claude Code reads work/brief.md, searches the news, and saves
+the article to work/article.md, using your Claude subscription.
+"""
 
 from __future__ import annotations
 
-import os
 import re
 from datetime import datetime
-
-import anthropic
+from pathlib import Path
 
 from .market_data import MarketData, format_change, format_level
 
@@ -21,51 +23,56 @@ SECTIONS = """\
 ## Crypto
 ## On the radar
 ## What to watch today
-## Term of the day"""
+## Term of the day
+## Sources"""
 
-SYSTEM = """\
+BRIEF = """\
+# Brief: today's edition of {name}
+
 You are the editor of {name}, a daily markets newspaper read by finance students \
 and young professionals. You write like a good financial newspaper: clear, lively, \
 precise, and never hyped. You explain *why* markets moved, not just *that* they moved.
 
-Rules:
+It is {today}, {time} {timezone} time. Write today's edition.
+
+## Rules
 - Every price, index level and percentage move you quote must come from the market \
-data the user gives you. Never invent or estimate a number.
+data below. Never invent or estimate a number.
 - Use web search to find the news behind the biggest moves (earnings, central banks, \
 economic data, geopolitics) from the last day or so, and what is scheduled for today. \
 Facts from the news (e.g. an earnings figure or an inflation reading) are fine to \
-quote, attributed to their source.
+quote, attributed to their source. Use at most {max_searches} searches.
+- Check each market's "as of" date: some figures are the previous session's close, \
+while markets trading now (e.g. Europe, crypto) show their latest price.
+- Note when markets were closed (e.g. a public holiday) instead of reading meaning into flat numbers.
 - Briefly explain jargon the first time it appears - readers are still learning.
 - Give no buy, sell or hold recommendations. This is news, not investment advice.
-- Note when markets were closed (e.g. a public holiday) instead of reading meaning into flat numbers."""
 
-INSTRUCTIONS = """\
-It is {today}, {time} {timezone} time. Write today's edition of {name}. \
-Check each market's "as of" date: some figures are the previous session's close, \
-while markets trading now (e.g. Europe, crypto) show their latest price.
-
+## Structure
 Use exactly this structure, in Markdown:
 
 {sections}
 
-Guidance per section:
 - The big story: the single most important market story, 150-250 words.
 - Around the world: US, Europe and Asia in a paragraph each.
 - Sectors and stocks: what led and lagged, and notable moves in Big Tech, banks and other heavyweights.
 - Rates, currencies and commodities: bond yields, the dollar, oil and gold, and what they signal.
 - Crypto: Bitcoin and the other majors, briefly.
-- On the radar: one or two themes "on the come-up" from the On the come-up group or the news (e.g. AI chips, uranium, India) and why they are worth watching.
+- On the radar: one or two themes "on the come-up" from the On the come-up group or the news \
+(e.g. AI chips, uranium, India) and why they are worth watching.
 - What to watch today: a bulleted list of 3-6 scheduled events (data releases, central bank speakers, big earnings).
 - Term of the day: explain one finance concept that came up today, in plain English, 80-120 words.
+- Sources: a bulleted list of the articles you used, as Markdown links.
 
-Aim for 900-1,300 words in total. Output only the article - start with the "# " headline \
-line and write nothing before it.
+Aim for 900-1,300 words before the sources. The file must start with the "# " headline \
+line - nothing before it.
 
-Market data ("1d" = change over the latest session, "1w" about five sessions, \
-"1m" about 21 sessions, "YTD" since the end of last year; bond yields move in basis points, \
-1 bp = 0.01 percentage points; "as of" is the date of the latest price):
-
-{data}"""
+## Market data
+"1d" = change over the latest session, "1w" about five sessions, "1m" about 21 sessions, \
+"YTD" since the end of last year. Bond yields move in basis points (1 bp = 0.01 percentage \
+points). "as of" is the date of the latest price.
+{data}
+"""
 
 
 def _data_table(data: MarketData) -> str:
@@ -88,75 +95,28 @@ def _data_table(data: MarketData) -> str:
     return "\n".join(lines)
 
 
-def _sources(blocks) -> list[dict]:
-    seen, sources = set(), []
-    for block in blocks:
-        for citation in getattr(block, "citations", None) or []:
-            url = getattr(citation, "url", None)
-            if url and url not in seen:
-                seen.add(url)
-                sources.append({"url": url, "title": getattr(citation, "title", None) or url})
-    return sources
+def write_brief(data: MarketData, config: dict, now: datetime, path: Path) -> None:
+    paper = config["paper"]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(BRIEF.format(
+        name=paper["name"],
+        today=now.strftime("%A %d %B %Y"),
+        time=now.strftime("%H:%M"),
+        timezone=paper["timezone"],
+        max_searches=config["writer"]["max_searches"],
+        sections=SECTIONS,
+        data=_data_table(data),
+    ), encoding="utf-8")
 
 
-def write_article(data: MarketData, config: dict, now: datetime) -> dict | None:
-    """Returns {"markdown": ..., "sources": [...]}, or None if there's no API key or Claude couldn't write it."""
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("No ANTHROPIC_API_KEY set - publishing a numbers-only edition.")
+def read_article(path: Path) -> str | None:
+    """Returns Claude's article, or None if it's missing or doesn't look like an article."""
+    if not path.exists():
+        print("No article from Claude - publishing a numbers-only edition.")
         return None
-
-    name = config["paper"]["name"]
-    client = anthropic.Anthropic()
-    messages = [{
-        "role": "user",
-        "content": INSTRUCTIONS.format(
-            today=now.strftime("%A %d %B %Y"), time=now.strftime("%H:%M"),
-            timezone=config["paper"]["timezone"], name=name, sections=SECTIONS, data=_data_table(data)
-        ),
-    }]
-
-    try:
-        # Web searches can make Claude pause part-way; we simply let it carry on.
-        for _ in range(5):
-            response = client.beta.messages.create(
-                model=config["writer"]["model"],
-                max_tokens=16000,
-                betas=["server-side-fallback-2026-07-01"],
-                fallbacks="default",
-                system=SYSTEM.format(name=name),
-                output_config={"effort": "medium"},
-                tools=[{
-                    "type": "web_search_20260209",
-                    "name": "web_search",
-                    "max_uses": config["writer"]["max_searches"],
-                }],
-                messages=messages,
-            )
-            if response.stop_reason != "pause_turn":
-                break
-            messages.append({"role": "assistant", "content": response.content})
-    except anthropic.AuthenticationError:
-        print("Claude API key was rejected - check the ANTHROPIC_API_KEY secret.")
-        return None
-    except anthropic.APIStatusError as e:
-        print(f"Claude API error {e.status_code}: {e.message}")
-        return None
-    except anthropic.APIConnectionError:
-        print("Could not reach the Claude API.")
-        return None
-
-    if response.stop_reason == "refusal":
-        print("Claude declined to write today's article.")
-        return None
-
-    # The article is the run of text after Claude's last web search.
-    last_tool = max((i for i, b in enumerate(response.content) if b.type != "text"), default=-1)
-    article_blocks = [b for b in response.content[last_tool + 1:] if b.type == "text"]
-    text = "".join(b.text for b in article_blocks)
+    text = path.read_text(encoding="utf-8")
     headline = re.search(r"^# ", text, re.MULTILINE)
     if not headline:
-        print("Claude's reply didn't contain a headline - publishing a numbers-only edition.")
+        print("Claude's article had no headline - publishing a numbers-only edition.")
         return None
-
-    print(f"Article written ({response.usage.output_tokens} output tokens).")
-    return {"markdown": text[headline.start():].strip(), "sources": _sources(article_blocks)}
+    return text[headline.start():].strip()
