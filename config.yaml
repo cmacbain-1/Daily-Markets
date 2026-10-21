@@ -13,7 +13,7 @@ paper:
   # Once GitHub Pages is switched on, paste your site address here,
   # e.g. https://your-username.github.io/market-daily
   # (it makes the preview image show up when you share the link on LinkedIn)
-  site_url: ""
+  site_url: "https://cmacbain-1.github.io/Daily-Markets"
 
 writer:
   # How many web searches Claude may run to find out WHY markets moved.
