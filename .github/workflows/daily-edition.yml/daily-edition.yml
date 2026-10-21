@@ -1,0 +1,85 @@
+name: Daily edition
+
+on:
+  # GitHub's clock runs on UTC, so we wake up a few times each morning and
+  # make_edition.py decides whether it's 7am in your time zone yet.
+  # 11:00 and 12:00 UTC cover 7am New York time in both summer and winter;
+  # 13:00 UTC is a backup in case GitHub runs late.
+  schedule:
+    - cron: "0 11,12,13 * * 1-5"
+  # Adds a "Run workflow" button on the Actions tab so you can publish any time.
+  workflow_dispatch:
+
+permissions:
+  contents: write   # save each edition back into the repository
+  pages: write      # publish the website
+  id-token: write
+
+concurrency:
+  group: daily-edition
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Get prices and draw charts
+        id: prepare
+        env:
+          FORCE: ${{ github.event_name == 'workflow_dispatch' }}
+        run: python make_edition.py prepare
+
+      # Claude Code writes the article using your Claude subscription.
+      # If this step fails, the paper still comes out with numbers and charts only.
+      - name: Claude writes the article
+        if: steps.prepare.outputs.ready == 'true'
+        continue-on-error: true
+        timeout-minutes: 15
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Read work/brief.md and follow it exactly to write today's edition.
+            Save the finished article to work/article.md. Don't change any other file.
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Read,Write,WebSearch,WebFetch"
+
+      - name: Build the pages
+        if: steps.prepare.outputs.ready == 'true'
+        run: python make_edition.py publish
+
+      - name: Save the edition to the repository
+        if: steps.prepare.outputs.ready == 'true'
+        run: |
+          git config user.name "morning-ledger-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "Edition for $(date -u +%F)"
+          git push
+
+      - if: steps.prepare.outputs.ready == 'true'
+        uses: actions/configure-pages@v5
+
+      - if: steps.prepare.outputs.ready == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - if: steps.prepare.outputs.ready == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
