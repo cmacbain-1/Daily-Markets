@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import re
+import shutil
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 
 import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -30,6 +32,16 @@ CHART_CAPTIONS = {
 NUMBERS_ONLY_SECTIONS = ["Around the world", "Sectors and stocks", "Rates, currencies and commodities", "Crypto"]
 
 env = Environment(loader=FileSystemLoader(TEMPLATES), autoescape=select_autoescape())
+
+
+def _author(config: dict) -> dict:
+    author = config.get("author", {})
+    return {
+        "name": author.get("name") or "cmacbain-1",
+        "linkedin": author.get("linkedin", ""),
+        "blurb": author.get("blurb", ""),
+        "github": author.get("github", ""),
+    }
 
 
 def _split_article(md_text: str) -> tuple[str, str, list[dict]]:
@@ -121,6 +133,9 @@ def build(docs: Path, edition_dir: Path, data: MarketData, charts: dict[str, str
         "number": number,
         "og_image": f"{site_url}/editions/{date_slug}/{charts['world']}" if site_url and "world" in charts else "",
         "page_url": f"{site_url}/editions/{date_slug}/" if site_url else "",
+        "share_url": f"https://www.linkedin.com/sharing/share-offsite/?url={quote(site_url + '/editions/' + date_slug + '/', safe='')}"
+                     if site_url else "",
+        "author": _author(config),
     }
     template = env.get_template("edition.html")
     # The dated copy, kept forever in the archive...
@@ -129,10 +144,28 @@ def build(docs: Path, edition_dir: Path, data: MarketData, charts: dict[str, str
     # ...and the front page, which always shows the latest edition.
     (docs / "index.html").write_text(
         template.render(**context, root="", assets=f"editions/{date_slug}/"), encoding="utf-8")
-    build_archive(docs, paper)
+    # A copy of the main chart at a fixed address, for the GitHub page
+    if "world" in charts:
+        shutil.copyfile(edition_dir / charts["world"], docs / "latest-chart.png")
+    build_site_pages(docs, config)
 
 
-def build_archive(docs: Path, paper: dict) -> None:
+def build_site_pages(docs: Path, config: dict) -> None:
+    """The pages that aren't editions: the archive and the About page."""
+    build_archive(docs, config)
+    paper = config["paper"]
+    hour = paper["publish_hour"]
+    city = paper["timezone"].split("/")[-1].replace("_", " ")
+    publish_time = f"{hour % 12 or 12}{'am' if hour < 12 else 'pm'} {city} time"
+    groups = [{"title": g["title"], "count": len(g["tickers"])} for g in config["groups"]]
+    html = env.get_template("about.html").render(
+        paper=paper, author=_author(config), root="", publish_time=publish_time, groups=groups,
+        market_count=sum(g["count"] for g in groups))
+    (docs / "about.html").write_text(html, encoding="utf-8")
+
+
+def build_archive(docs: Path, config: dict) -> None:
+    paper = config["paper"]
     editions = []
     for folder in sorted((docs / "editions").iterdir(), reverse=True):
         page = folder / "index.html"
@@ -144,5 +177,5 @@ def build_archive(docs: Path, paper: dict) -> None:
             "date": datetime.fromisoformat(folder.name).strftime("%a %d %b %Y"),
             "headline": found.group(1).strip() if found else folder.name,
         })
-    html = env.get_template("archive.html").render(paper=paper, editions=editions, root="")
+    html = env.get_template("archive.html").render(paper=paper, author=_author(config), editions=editions, root="")
     (docs / "archive.html").write_text(html, encoding="utf-8")

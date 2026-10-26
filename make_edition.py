@@ -4,6 +4,7 @@
                                              # (only if it's publishing time and today's edition isn't out yet)
     python make_edition.py prepare --force   # do it now regardless
     python make_edition.py publish           # build the pages from the charts and Claude's article
+    python make_edition.py rebuild           # redo every edition's page after a design change
 
 In between, Claude reads work/brief.md and saves its article to work/article.md.
 If there's no article, publish makes a numbers-only edition.
@@ -74,6 +75,7 @@ def prepare(config: dict, force: bool) -> None:
                                  "time": now.isoformat()}), encoding="utf-8")
     print(f"Ready for Claude: {BRIEF.relative_to(ROOT)}")
     tell_github("ready", "true")
+    tell_github("date", edition_dir.name)
 
 
 def publish(config: dict) -> None:
@@ -94,6 +96,18 @@ def publish(config: dict) -> None:
     print(f"Edition No. {number} published to {edition_dir.relative_to(ROOT)}")
 
 
+def rebuild(config: dict) -> None:
+    """Re-renders every past edition from its saved numbers, charts and article."""
+    folders = sorted(d for d in (DOCS / "editions").iterdir() if (d / "data.json").exists())
+    for number, folder in enumerate(folders, start=1):
+        data = market_data.MarketData.from_json(config, json.loads((folder / "data.json").read_text(encoding="utf-8")))
+        article_file = folder / "article.md"
+        article = article_file.read_text(encoding="utf-8") if article_file.exists() else None
+        made = {c: f"{c}.png" for c in charts.CHART_IDS if (folder / f"{c}.png").exists()}
+        page.build(DOCS, folder, data, made, article, config, datetime.fromisoformat(folder.name), number)
+    print(f"Rebuilt {len(folders)} editions.")
+
+
 def main() -> None:
     config = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     step = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -101,6 +115,8 @@ def main() -> None:
         prepare(config, force="--force" in sys.argv or os.environ.get("FORCE") == "true")
     elif step == "publish":
         publish(config)
+    elif step == "rebuild":
+        rebuild(config)
     else:
         sys.exit(__doc__)
 

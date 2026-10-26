@@ -64,5 +64,20 @@
   .archive-date { font-family: var(--sans); font-size: 13px; color: var(--muted); min-width: 120px; padding-top: 3px; }
   .archive-headline { font-family: var(--display); font-size: 20px; font-weight: 700; }
 
+  .topbar-links, .topbar:has(> a) { display: flex; gap: 16px; }
+  .share { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  .share-button { display: inline-block; font-family: var(--sans); font-size: 14px; font-weight: 600; text-decoration: none; color: var(--paper); background: var(--ink); padding: 10px 18px; border-radius: 4px; }
+  .share-button:hover { background: var(--ink-2); }
+
+  .about { max-width: 720px; margin: 0 auto; padding-top: 32px; }
+  .about h2 { font-family: var(--sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin: 36px 0 12px; padding-top: 12px; border-top: 2px solid var(--rule-strong); }
+  .about .steps { padding-left: 22px; }
+  .about .steps li { margin-bottom: 12px; }
+  .about .tracked { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 24px; font-family: var(--sans); font-size: 15px; }
+  .about .tracked li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  .about .tracked span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .about .tools { font-family: var(--sans); font-size: 15px; }
+
+  .footer .byline { color: var(--ink); }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 3px double var(--rule-strong); font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
 </style>

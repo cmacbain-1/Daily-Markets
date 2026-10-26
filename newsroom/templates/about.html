@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+{% include "head.html" %}
+  <title>About | {{ paper.name }}</title>
+  <meta name="description" content="How {{ paper.name }} works: an automated daily markets newspaper built by {{ author.name }}.">
+</head>
+<body>
+  <div class="page">
+    <div class="topbar"><a href="{{ root }}index.html">Today's edition</a> <a href="{{ root }}archive.html">Past editions</a></div>
+    <header class="masthead">
+      <a class="title" href="{{ root }}index.html">{{ paper.name }}</a>
+      <p class="tagline">About this project</p>
+    </header>
+
+    <main class="about">
+      <p class="standfirst">{{ paper.name }} is a daily markets newspaper that researches, writes and publishes itself every weekday
+        at {{ publish_time }}, before Wall Street opens. It was designed and built by
+        {% if author.linkedin %}<a href="{{ author.linkedin }}" rel="noopener">{{ author.name }}</a>{% else %}{{ author.name }}{% endif %}{% if author.blurb %}, {{ author.blurb }}{% endif %}.</p>
+
+      <section>
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li><strong>Collects the data.</strong> Each morning a program downloads the latest prices for {{ market_count }} markets
+            from Yahoo Finance and works out how far each one moved over the day, week, month and year.</li>
+          <li><strong>Draws the charts.</strong> The same program turns those numbers into the charts and tables in each edition.</li>
+          <li><strong>Writes the story.</strong> Claude, an AI model made by Anthropic, reads the numbers, searches the news to find
+            out <em>why</em> markets moved, and writes the article. It is instructed to quote only the real data and to list its sources.</li>
+          <li><strong>Publishes the paper.</strong> Everything is assembled into a web page and published, with every past edition kept in the
+            <a href="{{ root }}archive.html">archive</a>.</li>
+        </ol>
+        <p>The whole process runs automatically in the cloud on GitHub Actions, with no one needing to press a button.</p>
+      </section>
+
+      <section>
+        <h2>What it tracks</h2>
+        <ul class="tracked">
+          {% for group in groups %}<li><strong>{{ group.title }}</strong> <span>{{ group.count }}</span></li>{% endfor %}
+        </ul>
+      </section>
+
+      <section>
+        <h2>Built with</h2>
+        <p class="tools">Python &middot; pandas &middot; yfinance &middot; Matplotlib &middot; Jinja2 &middot; Claude Code &middot; GitHub Actions &middot; GitHub Pages</p>
+        <p>The full source code is public on <a href="{{ author.github }}" rel="noopener">GitHub</a>.</p>
+      </section>
+
+      <section>
+        <h2>A note on accuracy</h2>
+        <p>Prices come from Yahoo Finance and may be delayed. The articles are written by AI, which is told to quote only the real data,
+          but they can still contain mistakes. Nothing here is investment advice.</p>
+      </section>
+    </main>
+{% include "footer.html" %}
+  </div>
+</body>
+</html>

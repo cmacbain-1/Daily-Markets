@@ -161,6 +161,9 @@ def us_10_year(data: MarketData, path: Path) -> str | None:
                         lambda v: f"{v:.2f}%", path)
 
 
+CHART_IDS = ["world", "sectors", "movers", "yields", "bitcoin"]
+
+
 def make_all(data: MarketData, out_dir: Path) -> dict[str, str]:
     """Returns {chart id: image file name} for every chart that could be drawn."""
     makers = {

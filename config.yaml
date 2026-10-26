@@ -15,6 +15,13 @@ paper:
   # (it makes the preview image show up when you share the link on LinkedIn)
   site_url: "https://cmacbain-1.github.io/Daily-Markets"
 
+# Who made the paper - shown on the About page and at the bottom of every page.
+author:
+  name: ""          # your name, e.g. Jane Smith (leave blank to show your GitHub username)
+  linkedin: ""      # your LinkedIn profile link, e.g. https://www.linkedin.com/in/your-name
+  blurb: "a finance student"   # appears after your name: "built by Jane Smith, a finance student"
+  github: https://github.com/cmacbain-1/Daily-Markets
+
 writer:
   # How many web searches Claude may run to find out WHY markets moved.
   max_searches: 6

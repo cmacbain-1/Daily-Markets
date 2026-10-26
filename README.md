@@ -1,59 +1,67 @@
 # The Morning Ledger
 
-A daily markets newspaper that writes and publishes itself every weekday at 7am New York time.
+**An automated daily markets newspaper.** Every weekday at 7am New York time it collects data on 81 markets, draws the charts, has an AI research and write the day's story, and publishes a new edition, with no one pressing a button.
 
-Every morning, GitHub runs a small program that:
+**Read today's edition → [cmacbain-1.github.io/Daily-Markets](https://cmacbain-1.github.io/Daily-Markets/)**  ·  [Past editions](https://cmacbain-1.github.io/Daily-Markets/archive.html)  ·  [About](https://cmacbain-1.github.io/Daily-Markets/about.html)
 
-1. downloads prices for about 80 markets from Yahoo Finance: stock indexes around the world, bond yields, currencies, commodities, crypto, US sectors, Big Tech, banks, and themes on the come-up;
-2. draws the charts;
-3. has Claude Code write the day's article, using web search to find out *why* things moved. This runs on a Claude Pro subscription, so there's no extra cost;
-4. turns it all into a newspaper-style web page and publishes it on GitHub Pages.
+![The main chart from the latest edition: world stock markets over the past month](https://cmacbain-1.github.io/Daily-Markets/latest-chart.png)
 
-If Claude can't write the article on a given day, for example because the subscription's usage limit has been reached, the paper still comes out with the numbers and charts.
+## What each edition covers
 
-Past editions are kept in an archive at `archive.html`.
+- **The big story**: the most important market move of the day, and why it happened
+- **Around the world**: the US, Europe and Asia-Pacific
+- **Sectors and stocks**: US sectors, Big Tech, banks and other heavyweights
+- **Rates, currencies and commodities**: Treasury yields, the dollar, oil, gold and more
+- **Crypto**: Bitcoin and the other majors
+- **On the radar**: fast-rising themes such as AI chips, cybersecurity, uranium and India
+- **What to watch today**: scheduled data releases, central bank speakers and earnings
+- **Term of the day**: one finance concept explained in plain English
+- Five charts, a "markets at a glance" data table, and the news sources used
 
-## What's in this folder
+## How it works
+
+```mermaid
+flowchart LR
+    A[GitHub Actions<br/>wakes up at 7am ET] --> B[Python downloads prices<br/>for 81 markets]
+    B --> C[Charts and a<br/>data brief]
+    C --> D[Claude researches the news<br/>and writes the article]
+    D --> E[Page built and published<br/>on GitHub Pages]
+```
+
+1. **Data:** `yfinance` pulls a year of daily prices for each market, and `pandas` works out the 1-day, 1-week, 1-month and year-to-date moves and 52-week ranges.
+2. **Charts:** `matplotlib` draws five charts, sized to work as LinkedIn link previews.
+3. **Writing:** Claude Code reads a brief containing all the numbers, searches the web for the news behind the moves, and writes the article. It is instructed to quote only the real data, explain jargon, give no investment advice, and cite its sources.
+4. **Publishing:** `Jinja2` templates turn everything into a newspaper-style page. Each edition is saved to an archive, and GitHub Pages serves the site.
+
+If the writing step fails on a given day, the edition still publishes with the numbers and charts, so a morning is never missed.
+
+## Built with
+
+Python · pandas · yfinance · Matplotlib · Jinja2 · Claude Code · GitHub Actions · GitHub Pages
+
+## Project layout
 
 | File | What it does |
 |---|---|
-| `config.yaml` | **Your settings.** Paper name, time zone, publishing time, and every market tracked. Edit this freely. |
-| `make_edition.py` | The main program. `prepare` gets prices and draws charts; `publish` builds the pages. |
-| `newsroom/market_data.py` | Downloads prices and works out the daily, weekly, monthly and year-to-date moves |
+| `config.yaml` | Settings: paper name, author, publishing time, and every market tracked |
+| `make_edition.py` | The main program: `prepare`, `publish` and `rebuild` |
+| `newsroom/market_data.py` | Downloads prices and calculates the moves |
 | `newsroom/charts.py` | Draws the charts |
-| `newsroom/writer.py` | The brief Claude follows when writing the article: sections, tone and rules |
-| `newsroom/page.py` + `newsroom/templates/` | Builds the web pages and controls how they look |
-| `.github/workflows/daily-edition.yml` | The alarm clock: tells GitHub when to run everything |
-| `docs/` | The finished website (created automatically; don't edit by hand) |
+| `newsroom/writer.py` | The brief Claude follows when writing |
+| `newsroom/page.py`, `newsroom/templates/` | Builds the web pages |
+| `.github/workflows/daily-edition.yml` | The daily schedule |
+| `docs/` | The published website, updated automatically |
 
-## One-time setup
+<details>
+<summary><strong>Run your own copy</strong></summary>
 
-### 1. Put the project on GitHub
-1. On github.com, click **+** (top right), then **New repository**. Name it e.g. `market-daily`, choose **Public**, and click **Create repository**.
-2. Click **uploading an existing file** and drag in everything from this folder, **including the `.github` folder**. Then click **Commit changes**.
+1. Copy this repository to your GitHub account.
+2. Create a Claude subscription token by running `claude setup-token` with [Claude Code](https://code.claude.com) installed, and save it as a repository secret named `CLAUDE_CODE_OAUTH_TOKEN` (**Settings → Secrets and variables → Actions**).
+3. Under **Settings → Pages**, set **Source** to **GitHub Actions**.
+4. Edit `config.yaml` with your name, site address and markets.
+5. On the **Actions** tab, open **Daily edition** and click **Run workflow**.
 
-### 2. Connect your Claude subscription
-1. Install Claude Code on your computer, then in a terminal run `claude setup-token`.
-2. Sign in with your Claude account in the browser window that opens. The terminal then shows a long token.
-3. In your repository, go to **Settings → Secrets and variables → Actions → New repository secret**.
-   - Name: `CLAUDE_CODE_OAUTH_TOKEN`
-   - Secret: paste the token
-
-Keep the token secret: it lets anyone use your Claude subscription.
-
-### 3. Turn on the website
-**Settings → Pages → Build and deployment → Source: GitHub Actions**.
-
-### 4. Publish your first edition
-Go to the **Actions** tab, click **Daily edition** on the left, then **Run workflow**. After about 10 minutes your paper is live at `https://<your-username>.github.io/<repository-name>/`.
-
-Finally, paste that address into `site_url` in `config.yaml`, so LinkedIn shows a chart as the preview image when you share the link.
-
-From now on a new edition appears every weekday at 7am New York time.
-
-## Changing things
-- **Track a different stock:** add it to a group in `config.yaml` using its Yahoo Finance symbol (search the company on finance.yahoo.com).
-- **Different time or time zone:** change `timezone` and `publish_hour` in `config.yaml`. If you pick a very different time, also change the `cron` line in the workflow file, since GitHub's clock runs on UTC.
-- **The article itself:** edit the brief in `newsroom/writer.py`.
+To change the design, edit the templates and run `python make_edition.py rebuild` to update every past edition too.
+</details>
 
 *For information and education only. Not financial advice.*
