@@ -17,7 +17,7 @@ paper:
 
 # Who made the paper - shown on the About page and at the bottom of every page.
 author:
-  name: ""          # your name, e.g. Jane Smith (leave blank to show your GitHub username)
+  name: "Calum MacBain"   # your name, e.g. Jane Smith (leave blank to show your GitHub username)
   linkedin: ""      # your LinkedIn profile link, e.g. https://www.linkedin.com/in/your-name
   blurb: "a finance student"   # appears after your name: "built by Jane Smith, a finance student"
   github: https://github.com/cmacbain-1/Daily-Markets

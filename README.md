@@ -1,5 +1,7 @@
 # The Morning Ledger
 
+*Built by Calum MacBain*
+
 **An automated daily markets newspaper.** Every weekday at 7am New York time it collects data on 81 markets, draws the charts, has an AI research and write the day's story, and publishes a new edition, with no one pressing a button.
 
 **Read today's edition → [cmacbain-1.github.io/Daily-Markets](https://cmacbain-1.github.io/Daily-Markets/)**  ·  [Past editions](https://cmacbain-1.github.io/Daily-Markets/archive.html)  ·  [About](https://cmacbain-1.github.io/Daily-Markets/about.html)
