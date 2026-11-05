@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23151412'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' fill='%23f8f6f0' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --paper: #f8f6f0;
+    --ink: #151412;
+    --ink-2: #4d4a44;
+    --muted: #7d7a72;
+    --rule: #d9d5ca;
+    --rule-strong: #151412;
+    --up: #006300;
+    --down: #b42323;
+    --serif: "Source Serif 4", Georgia, serif;
+    --display: "Playfair Display", Georgia, serif;
+    --sans: Inter, "Segoe UI", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 18px; line-height: 1.6; }
+  a { color: inherit; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+
+  .topbar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 0; font-family: var(--sans); font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+  .masthead { text-align: center; padding: 24px 0 16px; border-bottom: 3px double var(--rule-strong); }
+  .masthead .title { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 8vw, 84px); line-height: 1; text-decoration: none; letter-spacing: -0.01em; }
+  .tagline { margin: 10px 0 0; font-style: italic; color: var(--ink-2); font-size: 16px; }
+
+  .strip { display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid var(--rule-strong); font-family: var(--sans); font-size: 13px; scrollbar-width: thin; }
+  .strip-item { flex: 1 0 auto; display: flex; flex-direction: column; padding: 10px 14px; border-right: 1px solid var(--rule); white-space: nowrap; }
+  .strip-item:last-child { border-right: 0; }
+  .strip-name { color: var(--muted); font-size: 12px; }
+  .strip-level { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .chg { font-family: var(--sans); font-variant-numeric: tabular-nums; }
+  .chg.up { color: var(--up); }
+  .chg.down { color: var(--down); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 48px; padding-top: 32px; }
+  @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
+
+  .headline { font-family: var(--display); font-weight: 700; font-size: clamp(32px, 5vw, 50px); line-height: 1.1; margin: 0 0 16px; text-wrap: balance; }
+  .standfirst { font-size: 21px; line-height: 1.45; color: var(--ink-2); margin: 0 0 24px; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+  .article h2 { font-family: var(--sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin: 36px 0 12px; padding-top: 12px; border-top: 2px solid var(--rule-strong); }
+  .article section:first-of-type h2 { border-top: 0; padding-top: 0; margin-top: 0; }
+  .article section:first-of-type > p:first-of-type::first-letter { font-family: var(--display); float: left; font-size: 64px; line-height: 0.85; padding: 6px 8px 0 0; font-weight: 700; }
+  .article p { margin: 0 0 16px; }
+  .article ul { padding-left: 20px; }
+  .article li { margin-bottom: 8px; }
+  figure { margin: 24px 0; }
+  figure img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); }
+  figcaption { font-family: var(--sans); font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .article .sources ul { font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
+  .article .sources li { margin-bottom: 4px; }
+  .sources a { word-break: break-word; }
+
+  .glance-title { font-family: var(--display); font-size: 24px; margin: 0 0 8px; padding-bottom: 8px; border-bottom: 2px solid var(--rule-strong); }
+  .glance table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 13px; margin-bottom: 24px; }
+  .glance caption { text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; padding: 8px 0 4px; border-bottom: 1px solid var(--rule-strong); }
+  .glance th, .glance td { padding: 5px 0; border-bottom: 1px solid var(--rule); text-align: right; font-variant-numeric: tabular-nums; }
+  .glance th[scope="row"], .glance thead th:first-child { text-align: left; font-weight: 400; padding-right: 8px; }
+  .glance thead th { color: var(--muted); font-weight: 400; font-size: 11px; }
+  .glance td { padding-left: 8px; white-space: nowrap; }
+
+  .archive ul { list-style: none; padding: 0; margin: 24px 0; }
+  .archive li { border-bottom: 1px solid var(--rule); }
+  .archive a { display: flex; gap: 16px; padding: 14px 0; text-decoration: none; }
+  .archive-date { font-family: var(--sans); font-size: 13px; color: var(--muted); min-width: 120px; padding-top: 3px; }
+  .archive-headline { font-family: var(--display); font-size: 20px; font-weight: 700; }
+
+  .topbar-links, .topbar:has(> a) { display: flex; gap: 16px; }
+  .share { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  .share-button { display: inline-block; font-family: var(--sans); font-size: 14px; font-weight: 600; text-decoration: none; color: var(--paper); background: var(--ink); padding: 10px 18px; border-radius: 4px; }
+  .share-button:hover { background: var(--ink-2); }
+
+  .about { max-width: 720px; margin: 0 auto; padding-top: 32px; }
+  .about h2 { font-family: var(--sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin: 36px 0 12px; padding-top: 12px; border-top: 2px solid var(--rule-strong); }
+  .about .steps { padding-left: 22px; }
+  .about .steps li { margin-bottom: 12px; }
+  .about .tracked { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0 24px; font-family: var(--sans); font-size: 15px; }
+  .about .tracked li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  .about .tracked span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .about .tools { font-family: var(--sans); font-size: 15px; }
+
+  .footer .byline { color: var(--ink); }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 3px double var(--rule-strong); font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
+</style>
+  <title>Midterms and a Plunging Oil Price Send the Dow Soaring 3% | The Morning Ledger</title>
+  <meta name="description" content="Wall Street&#39;s best day in months came as Democrats won Congress and Brent crude tumbled on hopes of an end to the Iran war. Asia was split this morning, with Hong Kong and India surging while Korea and Japan sank.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="The Morning Ledger">
+  <meta property="og:title" content="Midterms and a Plunging Oil Price Send the Dow Soaring 3%">
+  <meta property="og:description" content="Wall Street&#39;s best day in months came as Democrats won Congress and Brent crude tumbled on hopes of an end to the Iran war. Asia was split this morning, with Hong Kong and India surging while Korea and Japan sank.">
+  <meta property="og:url" content="https://cmacbain-1.github.io/Daily-Markets/editions/2026-11-05/">
+  <meta property="og:image" content="https://cmacbain-1.github.io/Daily-Markets/editions/2026-11-05/world.png">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <span>Thursday 5 November 2026</span>
+      <span>No. 13</span>
+      <span class="topbar-links"><a href="../../archive.html">Past editions</a> <a href="../../about.html">About</a></span>
+    </div>
+
+    <header class="masthead">
+      <a class="title" href="../../index.html">The Morning Ledger</a>
+      <p class="tagline">Markets, money and what moved them - every weekday before the opening bell</p>
+    </header>
+
+    <div class="strip" role="list" aria-label="Key market numbers">
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">S&amp;P 500</span>
+        <span class="strip-level">7,689</span>
+        <span class="chg up">+1.58%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">Nasdaq Composite</span>
+        <span class="strip-level">25,737</span>
+        <span class="chg up">+1.44%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">FTSE 100</span>
+        <span class="strip-level">10,895</span>
+        <span class="chg up">+0.61%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">DAX</span>
+        <span class="strip-level">26,594</span>
+        <span class="chg up">+0.59%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">Nikkei 225</span>
+        <span class="strip-level">61,078</span>
+        <span class="chg down">-1.79%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">US 10-year Treasury</span>
+        <span class="strip-level">4.89%</span>
+        <span class="chg down">-6 bp</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">GBP / USD</span>
+        <span class="strip-level">1.3467</span>
+        <span class="chg up">+0.25%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">WTI crude oil</span>
+        <span class="strip-level">89.47</span>
+        <span class="chg up">+1.53%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">Gold</span>
+        <span class="strip-level">4,128</span>
+        <span class="chg up">+1.35%</span>
+      </div>
+      
+      <div class="strip-item" role="listitem">
+        <span class="strip-name">Bitcoin</span>
+        <span class="strip-level">79,602</span>
+        <span class="chg down">-1.00%</span>
+      </div>
+      
+    </div>
+
+    <div class="layout">
+      <main class="article">
+        <h1 class="headline">Midterms and a Plunging Oil Price Send the Dow Soaring 3%</h1>
+        <p class="standfirst">Wall Street&#39;s best day in months came as Democrats won Congress and Brent crude tumbled on hopes of an end to the Iran war. Asia was split this morning, with Hong Kong and India surging while Korea and Japan sank.</p>
+
+        
+        <section>
+          <h2>The big story</h2>
+          <p>The Dow Jones Industrial Average, a gauge of 30 large US companies, jumped 3.03% on Wednesday to 53,356, a gain of roughly 1,570 points. The S&amp;P 500 rose 1.58% to 7,689 and the Nasdaq Composite added 1.44% to 25,737. Small companies kept pace: the Russell 2000 gained 1.58%.</p>
+<p>Two things drove the move, according to Benzinga and the Manila Times. First, the US midterm elections: reports said Democrats won control of Congress, which investors read as lowering the odds of big new policy shocks. Second, oil. Brent crude, the global benchmark, fell 8.22% to $95.08 a barrel on Wednesday, with traders linking the drop to hopes of an end to the US-Iran war, Benzinga reported.</p>
+<p>Cheaper oil matters because it feeds into inflation. When energy costs fall, central banks have less reason to keep interest rates high, and that supports shares. Treasury yields fell too: the 10-year yield dropped 6 basis points to 4.89% (a basis point is one-hundredth of a percentage point). Lower yields make future company profits worth more today, and they cut borrowing costs.</p>
+<p>The rally was unusually broad. Nine of eleven sectors we track gained more than 2%, led by consumer discretionary (+4.26%). Energy (-4.74%) and industrials (-1.09%) were the exceptions. The VIX, Wall Street's "fear gauge" of expected volatility, sits at 16.91 this morning, up 1.81% on the day but well below its 52-week high of 31.05.</p>
+          
+        </section>
+        
+        <section>
+          <h2>Around the world</h2>
+          <p><strong>US.</strong> Wednesday's close is the latest US reading. Despite the surge, the S&amp;P 500 is still 0.71% lower than a week ago and 1.67% lower than a month ago, and about 1.7% below its 52-week high of 7,818.93. The Nasdaq is down 3.06% on the week, so this was in part a rebound from a sharp tech sell-off. Stock futures, which show where markets may open, are not in our data, so we cannot say how the opening bell will look.</p>
+<p><strong>Europe.</strong> European markets are trading higher this morning, following Wall Street. The FTSE 100 is up 0.61% at 10,895, near its 52-week high of 10,910.60. The DAX in Germany is up 0.59% at 26,594, which is a 52-week high, and the CAC 40 in France gained 0.85% to 8,248. The Euro Stoxx 50 added 0.52%. Over the past week the CAC has gained 3.49% and the DAX 2.13%.</p>
+<p><strong>Asia.</strong> The picture was split. Hong Kong's Hang Seng surged 3.67% to 24,797 and is up 8.01% on the week. India's Nifty 50 rose 2.40% and Australia's ASX 200 gained 2.61%. China's Shanghai Composite was nearly flat (+0.10%). In contrast, Japan's Nikkei 225 fell 1.79% to 61,078 and South Korea's KOSPI dropped 5.28% to 5,384. The KOSPI is down 22.44% in a month, though still up 27.75% this year; the Nikkei is off 12.68% in a month. We could not find a reliable report explaining today's declines, but both markets are heavy in technology and chip stocks, which have been under pressure (see below).</p>
+          
+          <figure>
+            <img src="world.png" alt="Major stock indexes over the past month" width="1200" height="630" loading="lazy">
+            <figcaption>Major stock indexes over the past month</figcaption>
+          </figure>
+          
+        </section>
+        
+        <section>
+          <h2>Sectors and stocks</h2>
+          <p>Leadership was wide, but with a defensive flavour. Consumer discretionary (XLY, +4.26%), financials (XLF, +3.51%), communication services (+3.47%), consumer staples (+3.36%) and real estate (+3.32%) all jumped. Financials and health care (+3.06%) closed at 52-week highs. Technology (XLK) was flat (-0.01%) and is down 7.59% in a week. Energy fell 4.74% as crude slid, and benzinga reported defence stocks dropped sharply, with Lockheed Martin down 7%.</p>
+<p><strong>Big Tech</strong> split. Microsoft rose 6.68% to $555.80, a 52-week high. Amazon gained 6.12% and Apple 5.31%, also a 52-week high at $349.51. Alphabet rose 3.18% but is down 11.07% on the week. Nvidia (-3.17%), Tesla (-3.34%) and Broadcom (-2.00%) fell.</p>
+<p><strong>Banks</strong> rallied. JPMorgan gained 4.18%, Morgan Stanley 4.23%, Bank of America 3.97%, Goldman Sachs 3.56%, Wells Fargo 2.22% and Citigroup 1.65%. In London, HSBC rose 1.15% and Barclays 1.47%.</p>
+<p><strong>Other heavyweights:</strong> Berkshire Hathaway +3.95%, Visa +3.84%, Walmart +3.45%, Johnson &amp; Johnson +3.81% and Novo Nordisk +4.95%. ExxonMobil fell 4.62%, tracking oil.</p>
+          
+          <figure>
+            <img src="sectors.png" alt="How each US sector did in the latest session" width="1200" height="630" loading="lazy">
+            <figcaption>How each US sector did in the latest session</figcaption>
+          </figure>
+          
+          <figure>
+            <img src="movers.png" alt="Biggest gainers and fallers on our watchlist" width="1200" height="630" loading="lazy">
+            <figcaption>Biggest gainers and fallers on our watchlist</figcaption>
+          </figure>
+          
+        </section>
+        
+        <section>
+          <h2>Rates, currencies and commodities</h2>
+          <p><strong>Bonds.</strong> Yields fell across the curve. The 10-year Treasury yield is 4.89% (-6 bp), the 5-year 4.69% (-5 bp) and the 30-year 5.28% (-4 bp). Over a month the 10-year has dropped 38 bp, a big move, though it remains 73 bp above where it began the year. The 3-month T-bill yields 4.03%, unchanged, so the market is not signalling a rush of rate cuts in the very near term.</p>
+<p><strong>Currencies.</strong> The US Dollar Index, which measures the dollar against a basket of major currencies, is at 101.62 (+0.11%). The euro buys $1.1223 and the pound $1.3467. The dollar is at 158.46 yen, little changed.</p>
+<p><strong>Commodities.</strong> Oil is the headline. Our data show WTI at $89.47 and Brent at $96.85, both up this morning (+1.53% and +2.36%), but down 12.28% and 15.69% over a week. The news reports of Brent falling 8.22% on Wednesday explain much of that weekly drop. Oil is still up about 56-59% this year, which shows how much the war premium has mattered. Gold rose 1.35% to $4,128 an ounce, still 4.91% lower this year. Silver is at $52.53 and copper at $6.39 a pound.</p>
+          
+          <figure>
+            <img src="yields.png" alt="The US 10-year yield over six months" width="1200" height="630" loading="lazy">
+            <figcaption>The US 10-year yield over six months</figcaption>
+          </figure>
+          
+        </section>
+        
+        <section>
+          <h2>Crypto</h2>
+          <p>Bitcoin traded around $79,602, down 1.00% in the last day but up 2.80% on the week, and about 9% lower this year. Ethereum fell 1.30% to $2,391 (+6.13% on the week). Solana is at $95.11 (-0.40%) and XRP at $1.30 (-0.13%). Crypto did not join the stock rally, which suggests it is trading on its own drivers.</p>
+          
+          <figure>
+            <img src="bitcoin.png" alt="Bitcoin over three months" width="1200" height="630" loading="lazy">
+            <figcaption>Bitcoin over three months</figcaption>
+          </figure>
+          
+        </section>
+        
+        <section>
+          <h2>On the radar</h2>
+          <p><strong>AI chips.</strong> Semiconductors are the market's weak spot. The semiconductor ETF SMH, a fund that holds chip makers, fell 2.75% on Wednesday and is down 20.27% over a month, though still up 40.02% this year. AMD is down 24.74% in a month, Arm 36.61% and TSMC 17.95%. Nvidia is 16.35% lower on the month. After big gains, this is a sharp reset, and the weakness in Korea and Japan fits the pattern. We have not found a single cause in our searches, so readers should treat the reasons as still unclear.</p>
+<p><strong>India.</strong> The Nifty 50 rose 2.40% today and is up 6.98% on the week and 7.73% on the month, even as it remains 6.10% lower this year. Cheaper oil is a plausible help, since India imports most of its crude, though we did not find a news source confirming that link. The India ETF INDA rose 2.73% on Wednesday.</p>
+          
+        </section>
+        
+        <section>
+          <h2>What to watch today</h2>
+          <p>Our search did not turn up a verified calendar for today, so the items below are things to check rather than confirmed schedules:</p>
+<ul>
+<li><strong>Oil and Iran headlines:</strong> whether talk of ending the war firms up, since oil drove Wednesday's move.</li>
+<li><strong>US weekly jobless claims:</strong> normally released on Thursday at 8:30am ET; confirm timing with your data provider.</li>
+<li><strong>The monthly US jobs report:</strong> usually published on the first Friday of the month, so likely tomorrow, which may keep traders cautious today.</li>
+<li><strong>Treasury yields:</strong> whether the 10-year stays below 4.89% after its 38 bp monthly fall.</li>
+<li><strong>Tech and chip stocks:</strong> whether the semiconductor sell-off continues or steadies after the KOSPI and Nikkei declines.</li>
+</ul>
+          
+        </section>
+        
+        <section>
+          <h2>Term of the day</h2>
+          <p><strong>Basis point.</strong> A basis point (bp) is one-hundredth of one percentage point, or 0.01%. Bond traders use it because yields move in small steps and "percent of a percent" is confusing. If the 10-year Treasury yield falls from 4.95% to 4.89%, it has fallen 6 basis points, not 6%. A 100 bp move equals one full percentage point. The unit matters because small yield changes affect mortgage rates, corporate borrowing costs and the value of existing bonds. When you read that yields are "up 73 bp this year", that means they have risen 0.73 percentage points, for example from 4.16% to 4.89%.</p>
+          
+        </section>
+        
+        <section class="sources">
+          <h2>Sources</h2>
+          <ul>
+<li><a href="https://benzinga.com/markets/equities/26/11/62877866/stock-market-today-dow-rallies-oil-sinks-midterms-democrats-sweep-congress">Stock Market Today: Dow Up 2.9%, Oil Sinks 7% After Midterms (Benzinga)</a></li>
+<li><a href="https://www.manilatimes.net/2026/11/05/business/foreign-business/stocks-surge-and-the-dow-soars-1500-points-as-oil-prices-tumble-following-the-us-midterm-elections/2462425">Stocks surge, and the Dow soars 1,500 points as oil prices tumble following the US midterm elections (Manila Times)</a></li>
+<li><a href="https://stocktitan.net/articles/stock-market-today-live-november-4-2026">The Dow Soared in the Stock Market Today, November 4, 2026 (StockTitan)</a></li>
+<li><a href="https://journalarta.com/en/2026/11/05/wall-street-close-dow-surges-3-03-as-brent-falls-8-22-and-vix-drops/">Stock Market Today: Dow Surges 3.03% as Oil Tumbles (JournalArta Global)</a></li>
+</ul>
+          
+        </section>
+        
+        
+        <p class="share"><a class="share-button" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcmacbain-1.github.io%2FDaily-Markets%2Feditions%2F2026-11-05%2F" rel="noopener" target="_blank">Share this edition on LinkedIn</a></p>
+        
+      </main>
+
+      <aside class="glance" aria-label="Markets at a glance">
+        <h2 class="glance-title">Markets at a glance</h2>
+        
+        <table>
+          <caption>US markets</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">S&amp;P 500</th>
+              <td>7,689</td>
+              <td class="chg up">+1.58%</td>
+              <td class="chg up">+12.32%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Dow Jones</th>
+              <td>53,356</td>
+              <td class="chg up">+3.03%</td>
+              <td class="chg up">+11.01%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Nasdaq Composite</th>
+              <td>25,737</td>
+              <td class="chg up">+1.44%</td>
+              <td class="chg up">+10.73%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Russell 2000 (small caps)</th>
+              <td>2,857</td>
+              <td class="chg up">+1.58%</td>
+              <td class="chg up">+15.11%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">VIX (volatility / &#34;fear gauge&#34;)</th>
+              <td>16.91</td>
+              <td class="chg up">+1.81%</td>
+              <td class="chg up">+13.11%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Europe</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">FTSE 100</th>
+              <td>10,895</td>
+              <td class="chg up">+0.61%</td>
+              <td class="chg up">+9.71%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">FTSE 250</th>
+              <td>25,053</td>
+              <td class="chg up">+0.55%</td>
+              <td class="chg up">+11.49%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">DAX (Germany)</th>
+              <td>26,594</td>
+              <td class="chg up">+0.59%</td>
+              <td class="chg up">+8.59%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">CAC 40 (France)</th>
+              <td>8,248</td>
+              <td class="chg up">+0.85%</td>
+              <td class="chg up">+1.21%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Euro Stoxx 50</th>
+              <td>6,299</td>
+              <td class="chg up">+0.52%</td>
+              <td class="chg up">+8.67%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Asia-Pacific</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Nikkei 225 (Japan)</th>
+              <td>61,078</td>
+              <td class="chg down">-1.79%</td>
+              <td class="chg up">+21.33%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Hang Seng (Hong Kong)</th>
+              <td>24,797</td>
+              <td class="chg up">+3.67%</td>
+              <td class="chg down">-3.25%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Shanghai Composite</th>
+              <td>3,690</td>
+              <td class="chg up">+0.10%</td>
+              <td class="chg down">-7.03%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Nifty 50 (India)</th>
+              <td>24,537</td>
+              <td class="chg up">+2.40%</td>
+              <td class="chg down">-6.10%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">KOSPI (South Korea)</th>
+              <td>5,384</td>
+              <td class="chg down">-5.28%</td>
+              <td class="chg up">+27.75%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">ASX 200 (Australia)</th>
+              <td>9,065</td>
+              <td class="chg up">+2.61%</td>
+              <td class="chg up">+4.03%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Government bond yields</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">US 3-month T-bill</th>
+              <td>4.03%</td>
+              <td class="chg ">+0 bp</td>
+              <td class="chg up">+48 bp</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">US 5-year Treasury</th>
+              <td>4.69%</td>
+              <td class="chg down">-5 bp</td>
+              <td class="chg up">+97 bp</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">US 10-year Treasury</th>
+              <td>4.89%</td>
+              <td class="chg down">-6 bp</td>
+              <td class="chg up">+73 bp</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">US 30-year Treasury</th>
+              <td>5.28%</td>
+              <td class="chg down">-4 bp</td>
+              <td class="chg up">+44 bp</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Currencies</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">US Dollar Index</th>
+              <td>101.62</td>
+              <td class="chg up">+0.11%</td>
+              <td class="chg up">+3.40%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">EUR / USD</th>
+              <td>1.1223</td>
+              <td class="chg up">+0.14%</td>
+              <td class="chg down">-4.46%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">GBP / USD</th>
+              <td>1.3467</td>
+              <td class="chg up">+0.25%</td>
+              <td class="chg up">+0.00%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">USD / JPY</th>
+              <td>158.46</td>
+              <td class="chg down">-0.00%</td>
+              <td class="chg up">+1.31%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">USD / CNY</th>
+              <td>6.6578</td>
+              <td class="chg down">-0.18%</td>
+              <td class="chg down">-4.84%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Commodities</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">WTI crude oil</th>
+              <td>89.47</td>
+              <td class="chg up">+1.53%</td>
+              <td class="chg up">+55.82%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Brent crude oil</th>
+              <td>96.85</td>
+              <td class="chg up">+2.36%</td>
+              <td class="chg up">+59.16%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Natural gas</th>
+              <td>2.9370</td>
+              <td class="chg down">-0.74%</td>
+              <td class="chg down">-20.32%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Gold</th>
+              <td>4,128</td>
+              <td class="chg up">+1.35%</td>
+              <td class="chg down">-4.91%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Silver</th>
+              <td>52.53</td>
+              <td class="chg up">+0.78%</td>
+              <td class="chg down">-25.11%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Copper</th>
+              <td>6.3920</td>
+              <td class="chg down">-0.17%</td>
+              <td class="chg up">+13.53%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Crypto</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Bitcoin</th>
+              <td>79,602</td>
+              <td class="chg down">-1.00%</td>
+              <td class="chg down">-9.04%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Ethereum</th>
+              <td>2,391</td>
+              <td class="chg down">-1.30%</td>
+              <td class="chg down">-19.42%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Solana</th>
+              <td>95.11</td>
+              <td class="chg down">-0.40%</td>
+              <td class="chg down">-23.60%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">XRP</th>
+              <td>1.3029</td>
+              <td class="chg down">-0.13%</td>
+              <td class="chg down">-29.19%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>US sectors</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Technology</th>
+              <td>176.50</td>
+              <td class="chg down">-0.01%</td>
+              <td class="chg up">+23.04%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Financials</th>
+              <td>59.20</td>
+              <td class="chg up">+3.51%</td>
+              <td class="chg up">+9.41%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Energy</th>
+              <td>63.52</td>
+              <td class="chg down">-4.74%</td>
+              <td class="chg up">+44.89%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Health care</th>
+              <td>189.66</td>
+              <td class="chg up">+3.06%</td>
+              <td class="chg up">+24.04%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Consumer discretionary</th>
+              <td>122.33</td>
+              <td class="chg up">+4.26%</td>
+              <td class="chg up">+3.08%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Consumer staples</th>
+              <td>91.94</td>
+              <td class="chg up">+3.36%</td>
+              <td class="chg up">+20.64%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Industrials</th>
+              <td>169.46</td>
+              <td class="chg down">-1.09%</td>
+              <td class="chg up">+10.12%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Utilities</th>
+              <td>43.61</td>
+              <td class="chg up">+0.44%</td>
+              <td class="chg up">+4.29%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Materials</th>
+              <td>53.90</td>
+              <td class="chg up">+2.49%</td>
+              <td class="chg up">+20.38%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Real estate</th>
+              <td>45.12</td>
+              <td class="chg up">+3.32%</td>
+              <td class="chg up">+14.52%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Communication services</th>
+              <td>104.96</td>
+              <td class="chg up">+3.47%</td>
+              <td class="chg down">-10.03%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Big Tech</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Apple</th>
+              <td>349.51</td>
+              <td class="chg up">+5.31%</td>
+              <td class="chg up">+28.91%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Microsoft</th>
+              <td>555.80</td>
+              <td class="chg up">+6.68%</td>
+              <td class="chg up">+15.65%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Nvidia</th>
+              <td>200.13</td>
+              <td class="chg down">-3.17%</td>
+              <td class="chg up">+7.56%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Alphabet</th>
+              <td>288.93</td>
+              <td class="chg up">+3.18%</td>
+              <td class="chg down">-7.51%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Amazon</th>
+              <td>266.03</td>
+              <td class="chg up">+6.12%</td>
+              <td class="chg up">+15.25%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Meta</th>
+              <td>630.00</td>
+              <td class="chg up">+1.44%</td>
+              <td class="chg down">-4.31%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Tesla</th>
+              <td>385.19</td>
+              <td class="chg down">-3.34%</td>
+              <td class="chg down">-14.35%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Broadcom</th>
+              <td>325.48</td>
+              <td class="chg down">-2.00%</td>
+              <td class="chg down">-5.44%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Banks</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">JPMorgan Chase</th>
+              <td>352.11</td>
+              <td class="chg up">+4.18%</td>
+              <td class="chg up">+11.38%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Bank of America</th>
+              <td>51.63</td>
+              <td class="chg up">+3.97%</td>
+              <td class="chg down">-4.62%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Goldman Sachs</th>
+              <td>928.00</td>
+              <td class="chg up">+3.56%</td>
+              <td class="chg up">+7.12%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Morgan Stanley</th>
+              <td>193.97</td>
+              <td class="chg up">+4.23%</td>
+              <td class="chg up">+11.74%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Citigroup</th>
+              <td>124.74</td>
+              <td class="chg up">+1.65%</td>
+              <td class="chg up">+9.11%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Wells Fargo</th>
+              <td>87.43</td>
+              <td class="chg up">+2.22%</td>
+              <td class="chg down">-4.65%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">HSBC (London, pence)</th>
+              <td>1,333</td>
+              <td class="chg up">+1.15%</td>
+              <td class="chg up">+13.64%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Barclays (London, pence)</th>
+              <td>441.10</td>
+              <td class="chg up">+1.47%</td>
+              <td class="chg down">-7.30%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>Other heavyweights</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Berkshire Hathaway</th>
+              <td>579.09</td>
+              <td class="chg up">+3.95%</td>
+              <td class="chg up">+15.21%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Eli Lilly</th>
+              <td>1,418</td>
+              <td class="chg up">+0.61%</td>
+              <td class="chg up">+32.58%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Novo Nordisk</th>
+              <td>42.18</td>
+              <td class="chg up">+4.95%</td>
+              <td class="chg down">-12.96%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Johnson &amp; Johnson</th>
+              <td>276.32</td>
+              <td class="chg up">+3.81%</td>
+              <td class="chg up">+35.67%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">ExxonMobil</th>
+              <td>169.27</td>
+              <td class="chg down">-4.62%</td>
+              <td class="chg up">+43.48%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Walmart</th>
+              <td>129.17</td>
+              <td class="chg up">+3.45%</td>
+              <td class="chg up">+16.68%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Visa</th>
+              <td>436.57</td>
+              <td class="chg up">+3.84%</td>
+              <td class="chg up">+25.23%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        <table>
+          <caption>On the come-up</caption>
+          <thead><tr><th scope="col">Name</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">YTD</th></tr></thead>
+          <tbody>
+            
+            <tr>
+              <th scope="row">Semiconductors ETF</th>
+              <td>504.27</td>
+              <td class="chg down">-2.75%</td>
+              <td class="chg up">+40.02%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">AMD</th>
+              <td>488.78</td>
+              <td class="chg up">+1.01%</td>
+              <td class="chg up">+128.23%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">TSMC</th>
+              <td>395.75</td>
+              <td class="chg down">-2.24%</td>
+              <td class="chg up">+31.25%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Arm Holdings</th>
+              <td>191.80</td>
+              <td class="chg down">-5.28%</td>
+              <td class="chg up">+75.46%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Palantir</th>
+              <td>171.70</td>
+              <td class="chg down">-2.11%</td>
+              <td class="chg down">-3.40%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Cybersecurity ETF</th>
+              <td>97.36</td>
+              <td class="chg up">+0.14%</td>
+              <td class="chg up">+36.62%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Robotics &amp; AI ETF</th>
+              <td>32.81</td>
+              <td class="chg up">+1.52%</td>
+              <td class="chg down">-9.39%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Uranium ETF</th>
+              <td>32.70</td>
+              <td class="chg down">-1.06%</td>
+              <td class="chg down">-23.47%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Clean energy ETF</th>
+              <td>16.60</td>
+              <td class="chg up">+3.04%</td>
+              <td class="chg up">+1.31%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">ARK Innovation ETF</th>
+              <td>80.37</td>
+              <td class="chg up">+0.06%</td>
+              <td class="chg up">+4.49%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">Emerging markets ETF</th>
+              <td>61.62</td>
+              <td class="chg up">+0.85%</td>
+              <td class="chg up">+13.22%</td>
+            </tr>
+            
+            <tr>
+              <th scope="row">India ETF</th>
+              <td>50.03</td>
+              <td class="chg up">+2.73%</td>
+              <td class="chg down">-7.44%</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+      </aside>
+    </div>
+
+    <footer class="footer">
+      <p class="byline">Built by Calum MacBain
+        &middot; <a href="../../about.html">About this project</a>
+        &middot; <a href="https://github.com/cmacbain-1/Daily-Markets" rel="noopener">Code on GitHub</a></p>
+      <p>Prices from Yahoo Finance and may be delayed. Written with the help of Claude, an AI model, so it can contain mistakes.
+        <strong>For information and education only - not financial advice.</strong></p>
+    </footer>
+  </div>
+</body>
+</html>
